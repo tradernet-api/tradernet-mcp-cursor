@@ -1,84 +1,84 @@
 # Tradernet MCP — Cursor plugin
 
-Подключает Cursor к API Tradernet через [Model Context Protocol](https://modelcontextprotocol.io/)
-по Streamable HTTP. После установки агент получает ~61 инструмент: котировки,
-портфель, заявки, тарифы, отчёты и др.
+Connects Cursor to the Tradernet API over [Model Context Protocol](https://modelcontextprotocol.io/)
+via Streamable HTTP. Once installed, the agent gets ~61 tools: quotes, portfolio,
+orders, tariffs, reports and more.
 
-> Все операции выполняются в **реальном аккаунте Tradernet** — с реальными
-> данными, заявками и деньгами. Используйте отдельный тест-аккаунт.
+> Every call runs against a **real Tradernet account** — real data, orders and
+> money. Use a dedicated test account, not your production one.
 
-## Что внутри
+## What's inside
 
-| Компонент | Файл | Назначение |
-|-----------|------|------------|
-| MCP-сервер | `mcp.json` | сервер `TN` → `https://tradernet.com/mcp/tn` (заголовки через `${env:...}`) |
-| Rules | `rules/*.mdc` | безопасность секретов, HMAC vs SID, формат данных и осторожность с write/trade |
-| Skill | `skills/tn-mcp-refresh-sid/` | runbook обновления SID после `auth_by_login` |
-| Commands | `commands/` | `/tn-connect` (дымовая проверка), `/tn-refresh-sid` |
-| Hook | `hooks/hooks.json` + `scripts/guard-write-tools.sh` | подтверждение перед write/trade-инструментами |
+| Component | File | Purpose |
+|-----------|------|---------|
+| MCP server | `mcp.json` | server `TN` → `https://tradernet.com/mcp/tn` (headers via `${env:...}`) |
+| Rules | `rules/*.mdc` | secret hygiene, HMAC vs SID, data format and write/trade caution |
+| Skill | `skills/tn-mcp-refresh-sid/` | runbook for refreshing the SID after `auth_by_login` |
+| Commands | `commands/` | `/tn-connect` (smoke check), `/tn-refresh-sid` |
+| Hook | `hooks/hooks.json` + `scripts/guard-write-tools.sh` | confirmation before write/trade tools |
 
-## Требования
+## Requirements
 
-1. Аккаунт Tradernet с доступом к API.
-2. Пара API-ключей — [tradernet.com/tradernet-api/auth-api](https://tradernet.com/tradernet-api/auth-api)
-   (`apiSecret` показывается один раз).
-3. Cursor с поддержкой Streamable HTTP MCP.
+1. A Tradernet account with API access.
+2. An API key pair — [tradernet.com/tradernet-api/auth-api](https://tradernet.com/tradernet-api/auth-api)
+   (`apiSecret` is shown only once).
+3. Cursor with Streamable HTTP MCP support.
 
-## Секреты (только в env, не в плагине)
+## Secrets (env only, never in the plugin)
 
-Плагин содержит лишь плейсхолдеры `${env:...}`. Ключи задаёт пользователь.
+The plugin ships only `${env:...}` placeholders. You provide the keys yourself.
 
 `~/.config/tn-mcp/credentials.env` (chmod 600):
 
 ```bash
 export TN_API_KEY="your-apiKey"
 export TN_API_SECRET="your-apiSecret"
-export TN_LOGIN="user@example.com"     # опционально, для auth_by_login
-export TN_PASSWORD="your-password"     # опционально
+export TN_LOGIN="user@example.com"     # optional, for auth_by_login
+export TN_PASSWORD="your-password"     # optional
 ```
 
-Подключение в `~/.zshrc`:
+Source it from `~/.zshrc`:
 
 ```bash
 [ -f ~/.config/tn-mcp/credentials.env ] && source ~/.config/tn-mcp/credentials.env
 ```
 
-`TN_SID` (опционально) — в `.cursor/tn-session.env`, обновляется скиллом
-`tn-mcp-refresh-sid`. Cursor читает `${env:...}` при старте, поэтому после смены
-переменных нужен `source` + перезапуск/Reload Window.
+`TN_SID` (optional) lives in `.cursor/tn-session.env` and is refreshed by the
+`tn-mcp-refresh-sid` skill. Cursor reads `${env:...}` at startup, so after
+changing variables you need `source` + restart / Reload Window.
 
-## Установка
+## Installation
 
-### Локально (для теста и внутренних команд)
+### Local (testing and internal teams)
 
 ```bash
 ln -s /absolute/path/to/tradernet-mcp ~/.cursor/plugins/local/tradernet-mcp
 chmod +x ~/.cursor/plugins/local/tradernet-mcp/scripts/guard-write-tools.sh
 ```
 
-Затем Reload Window (или перезапуск Cursor). Проверь, что в Settings → MCP
-появился сервер `TN`, а в Rules — правила `tn-mcp-*`.
+Then Reload Window (or restart Cursor). Check that the `TN` server appears under
+Settings → MCP, and the `tn-mcp-*` rules under Rules.
 
 ### Marketplace
 
-Плагин распространяется как git-репозиторий и проходит ручную проверку Cursor.
-Submit: [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish).
-Для публичного Marketplace репозиторий должен быть open-source.
+The plugin is distributed as a git repository and goes through Cursor's manual
+review. Submit at [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish).
+The repository must be open source for the public Marketplace.
 
-## Быстрый старт после установки
+## Quick start after install
 
-1. Задай секреты (см. выше) и перезапусти Cursor из терминала после `source`.
-2. Выполни `/tn-connect` — дымовая проверка канала.
-3. При необходимости SID — `/tn-refresh-sid`.
+1. Set the secrets (see above) and restart Cursor from a terminal after `source`.
+2. Run `/tn-connect` — a smoke check of the channel.
+3. If you need a SID — run `/tn-refresh-sid`.
 
-## Безопасность
+## Security
 
-- Секреты никогда не попадают в плагин, конфиг или чат — только env.
-- Hook `beforeMCPExecution` (`failClosed: true`) требует подтверждения перед
-  `orders_put`, `orders_delete`, `orders_set_stop_loss`, `tariff_select`,
-  изменением списков/алертов и `auth_by_login`.
-- Read-инструменты (котировки, портфель, отчёты) проходят без задержки.
+- Secrets never end up in the plugin, config or chat — env only.
+- The `beforeMCPExecution` hook (`failClosed: true`) requires confirmation
+  before `orders_put`, `orders_delete`, `orders_set_stop_loss`, `tariff_select`,
+  list/alert changes and `auth_by_login`.
+- Read-only tools (quotes, portfolio, reports) pass through without prompts.
 
-## Лицензия
+## License
 
 MIT.
