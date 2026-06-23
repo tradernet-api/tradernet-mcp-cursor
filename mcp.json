@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "TN": {
+      "url": "https://tradernet.com/mcp/tn",
+      "headers": {
+        "X-TN-API-Key": "${env:TN_API_KEY}",
+        "X-TN-API-Secret": "${env:TN_API_SECRET}",
+        "X-TN-SID": "${env:TN_SID}"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeMCPExecution": [
+      {
+        "command": "./scripts/guard-write-tools.sh",
+        "timeout": 5000,
+        "failClosed": true
+      }
+    ]
+  }
+}

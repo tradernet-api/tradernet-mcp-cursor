@@ -1,0 +1,20 @@
+{
+  "name": "tradernet-mcp",
+  "displayName": "Tradernet MCP",
+  "version": "1.0.0",
+  "description": "Connect Cursor to the Tradernet API over MCP (Streamable HTTP): quotes, portfolio, orders, tariffs and reports. Bundles connection config, safety rules, a SID-refresh skill, quick commands and a guard hook for write/trade tools.",
+  "author": {
+    "name": "Tradernet"
+  },
+  "homepage": "https://tradernet.com/tradernet-api/mcp",
+  "license": "MIT",
+  "keywords": [
+    "tradernet",
+    "trading",
+    "fintech",
+    "mcp",
+    "stocks",
+    "brokerage"
+  ],
+  "logo": "assets/logo.svg"
+}

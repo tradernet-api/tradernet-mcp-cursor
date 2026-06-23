@@ -1,0 +1,8 @@
+# Never commit real secrets or live session files
+credentials.env
+*.local.json
+.cursor/tn-session.env
+.cursor/tn-session.json
+
+# IDE
+.idea/

@@ -1,0 +1,30 @@
+---
+description: Каналы авторизации Tradernet MCP — HMAC (API-ключи) против сессии SID, какой инструмент что требует. Применять при ошибках 401 / HMAC и при вызове auth_by_login.
+alwaysApply: false
+---
+
+# Tradernet MCP — авторизация (HMAC vs SID)
+
+Два независимых канала:
+
+- **HMAC** — заголовки `X-TN-API-Key` + `X-TN-API-Secret`. Нужен для
+  `portfolio_get`, `quotes_get`, `quotes_get_hloc`, `orders_get_current`,
+  `orders_get_history` и т.п. `portfolio_get` работает **только** через HMAC.
+- **SID** — заголовок `X-TN-SID` после `auth_by_login`. Нужен для
+  `get_sid_info`, сессионных инструментов. `get_sid_info` без SID даёт
+  `401 Invalid credentials`.
+- `tariff_get_list` принимает оба канала (SID в приоритете, HMAC как fallback).
+
+`auth_by_login` — snake_case аргументы в MCP (`remember_me: 1`), camelCase в
+нативном REST (`rememberMe`). Сессия с `remember_me: 1` живёт ~14 дней.
+
+Диагностика:
+
+| Ошибка | Причина | Действие |
+|--------|---------|----------|
+| `HMAC credentials are required` | env не подхвачен Cursor | перезапустить Cursor из терминала после `source` |
+| `Invalid signature provided` | неверная пара ключей | перевыпустить ключи, обновить env |
+| `401 Invalid credentials` (SID) | протух/нет SID | `auth_by_login` → обновить SID (см. skill `tn-mcp-refresh-sid`) |
+
+`${env:TN_SID}` фиксируется при старте Cursor — после смены SID нужен
+`source .cursor/tn-session.env` + Reload Window / перезапуск.
