@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tradernet MCP — Cursor plugin</title>
+<meta name="description" content="Connect Cursor to the Tradernet API over MCP (Streamable HTTP): quotes, portfolio, orders, tariffs and reports. Bundles config, rules, a SID-refresh skill, commands and a write/trade guard hook.">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<style>
+  :root{
+    --bg:#0b1220; --panel:#111a2e; --panel2:#0f1830; --line:#1e2c4a;
+    --text:#e8eef9; --muted:#9fb0cc; --accent:#2EC4B6; --accent2:#1f8f86;
+    --navy:#0B1F3A; --code:#0a1226; --warn:#ffb020; --danger:#ff5d5d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px}
+  header.hero{padding:64px 0 40px;background:
+    radial-gradient(1200px 400px at 50% -10%, rgba(46,196,182,.18), transparent 60%),
+    linear-gradient(180deg,#0c1428,#0b1220)}
+  .badge{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--accent);border:1px solid var(--accent2);border-radius:999px;padding:4px 12px;margin-bottom:18px}
+  .hero-row{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+  .hero-row img{width:72px;height:72px;border-radius:18px;background:var(--navy);padding:6px;
+    box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  h1{font-size:38px;margin:0 0 6px;line-height:1.15}
+  .tag{color:var(--muted);font-size:18px;margin:0}
+  .cta{margin-top:26px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:11px 18px;border-radius:10px;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--accent);color:#04201d}
+  .btn.primary:hover{background:#3fd8c9;text-decoration:none}
+  .btn.ghost{border:1px solid var(--line);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--accent2);text-decoration:none}
+  section{padding:34px 0;border-top:1px solid var(--line)}
+  h2{font-size:24px;margin:0 0 14px}
+  h3{font-size:17px;margin:24px 0 8px;color:#cfe}
+  p{margin:0 0 14px}
+  .muted{color:var(--muted)}
+  .alert{border:1px solid;border-radius:12px;padding:14px 16px;margin:16px 0;background:rgba(255,93,93,.07);
+    border-color:rgba(255,93,93,.4)}
+  .alert.warn{background:rgba(255,176,32,.08);border-color:rgba(255,176,32,.4)}
+  table{width:100%;border-collapse:collapse;margin:8px 0 18px;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  code{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13px;
+    background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto;margin:0 0 16px}
+  pre code{background:none;padding:0;font-size:13px;color:#d6e2ff}
+  ol,ul{margin:0 0 16px;padding-left:22px}
+  li{margin:6px 0}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:8px 0 6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h3{margin:0 0 6px;color:#fff}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .switch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .pill{font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+  .pill.active{color:#04201d;background:var(--accent);border-color:var(--accent)}
+  footer{padding:40px 0 60px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+  .kbd{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <span class="badge">Cursor plugin</span>
+    <div class="hero-row">
+      <img src="logo.svg" alt="Tradernet MCP logo">
+      <div>
+        <h1>Tradernet MCP for Cursor</h1>
+        <p class="tag">Trade-grade Tradernet API tools inside Cursor, over Model Context Protocol.</p>
+      </div>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/tradernet-api/tradernet-mcp">View on GitHub</a>
+      <a class="btn ghost" href="#install">Install</a>
+      <a class="btn ghost" href="https://tradernet.com/tradernet-api/mcp">API docs</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section style="border-top:none">
+    <p>Connects Cursor to the Tradernet API over
+      <a href="https://modelcontextprotocol.io/">Model Context Protocol</a> via Streamable HTTP.
+      Once installed, the agent gets <strong>~61 tools</strong>: quotes, portfolio, orders, tariffs,
+      reports and more — plus safety rules, a SID-refresh skill, quick commands and a guard hook.</p>
+    <div class="alert">
+      <strong>Real account.</strong> Every call runs against a real Tradernet account — real data,
+      orders and money. Use a dedicated test account, not your production one.
+    </div>
+    <div class="switch">
+      <span class="pill active">Cursor</span>
+      <a class="pill" href="https://tradernet-api.github.io/tradernet-mcp-claude/">Claude Desktop</a>
+      <a class="pill" href="https://tradernet-api.github.io/tradernet-mcp-codex/">Codex</a>
+    </div>
+  </section>
+
+  <section id="inside">
+    <h2>What's inside</h2>
+    <div class="grid">
+      <div class="card"><h3>MCP server</h3><p><code>mcp.json</code> — server <code>TN</code> with headers via <code>${env:...}</code>.</p></div>
+      <div class="card"><h3>Rules</h3><p><code>rules/*.mdc</code> — secret hygiene, HMAC vs SID, data format, write/trade caution.</p></div>
+      <div class="card"><h3>Skill</h3><p><code>skills/tn-mcp-refresh-sid/</code> — runbook to refresh the SID after <code>auth_by_login</code>.</p></div>
+      <div class="card"><h3>Commands</h3><p><code>/tn-connect</code> smoke check and <code>/tn-refresh-sid</code>.</p></div>
+      <div class="card"><h3>Guard hook</h3><p><code>hooks/hooks.json</code> + <code>scripts/guard-write-tools.sh</code> — confirm write/trade tools.</p></div>
+    </div>
+  </section>
+
+  <section id="requirements">
+    <h2>Requirements</h2>
+    <ol>
+      <li>A Tradernet account with API access.</li>
+      <li>An API key pair — <a href="https://tradernet.com/tradernet-api/auth-api">tradernet.com/tradernet-api/auth-api</a>
+        (<code>apiSecret</code> is shown only once).</li>
+      <li>Cursor with Streamable HTTP MCP support.</li>
+    </ol>
+  </section>
+
+  <section id="secrets">
+    <h2>Secrets (env only)</h2>
+    <p>The plugin ships only <code>${env:...}</code> placeholders — you provide the keys.
+      Put them in <code>~/.config/tn-mcp/credentials.env</code> (chmod 600):</p>
+<pre><code>export TN_API_KEY="your-apiKey"
+export TN_API_SECRET="your-apiSecret"
+export TN_LOGIN="user@example.com"     # optional, for auth_by_login
+export TN_PASSWORD="your-password"     # optional</code></pre>
+    <p>Source it from <code>~/.zshrc</code>:</p>
+<pre><code>[ -f ~/.config/tn-mcp/credentials.env ] && source ~/.config/tn-mcp/credentials.env</code></pre>
+    <p class="muted"><code>TN_SID</code> (optional) lives in <code>.cursor/tn-session.env</code> and is refreshed by the
+      <code>tn-mcp-refresh-sid</code> skill. Cursor reads <code>${env:...}</code> at startup, so after
+      changing variables run <code>source</code> + restart / Reload Window.</p>
+  </section>
+
+  <section id="install">
+    <h2>Installation</h2>
+    <h3>Local (testing and internal teams)</h3>
+<pre><code>ln -s /absolute/path/to/tradernet-mcp ~/.cursor/plugins/local/tradernet-mcp
+chmod +x ~/.cursor/plugins/local/tradernet-mcp/scripts/guard-write-tools.sh</code></pre>
+    <p>Then Reload Window. Check that the <code>TN</code> server appears under Settings → MCP, and the
+      <code>tn-mcp-*</code> rules under Rules.</p>
+    <h3>Marketplace</h3>
+    <p>The plugin is distributed as a git repository and goes through Cursor's manual review. Submit at
+      <a href="https://cursor.com/marketplace/publish">cursor.com/marketplace/publish</a>.
+      The repository must be open source for the public Marketplace.</p>
+  </section>
+
+  <section id="quick-start">
+    <h2>Quick start</h2>
+    <ol>
+      <li>Set the secrets (above) and restart Cursor from a terminal after <code>source</code>.</li>
+      <li>Run <code>/tn-connect</code> — a smoke check of the channel.</li>
+      <li>If you need a SID — run <code>/tn-refresh-sid</code>.</li>
+    </ol>
+  </section>
+
+  <section id="security">
+    <h2>Security model</h2>
+    <ul>
+      <li>Secrets never end up in the plugin, config or chat — env only.</li>
+      <li>The <code>beforeMCPExecution</code> hook (<code>failClosed: true</code>) requires confirmation before
+        <code>orders_put</code>, <code>orders_delete</code>, <code>orders_set_stop_loss</code>,
+        <code>tariff_select</code>, list/alert changes and <code>auth_by_login</code>.</li>
+      <li>Read-only tools (quotes, portfolio, reports) pass through without prompts.</li>
+    </ul>
+  </section>
+
+  <section id="data">
+    <h2>Data notes</h2>
+    <ul>
+      <li>Numbers often come back as strings (<code>"p": "10.08600000"</code>) — cast before math.</li>
+      <li><code>quotes_get_hloc</code> candle order is <code>[HIGH, LOW, OPEN, CLOSE]</code>; the ticker is a string (<code>"AAPL.US"</code>), not an array.</li>
+      <li>Large responses — use pagination and filters (<code>max_count</code>, date ranges).</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong>Tradernet MCP</strong> · Cursor plugin ·
+      <a href="https://github.com/tradernet-api/tradernet-mcp">GitHub</a> ·
+      <a href="https://tradernet.com/tradernet-api">API documentation</a></p>
+    <p class="kbd">Not investment advice. Operations run in your own Tradernet account. MIT License.</p>
+  </div>
+</footer>
+</body>
+</html>
