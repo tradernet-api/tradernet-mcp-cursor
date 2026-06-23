@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="assets/logo.svg" alt="Tradernet MCP" width="280">
-
 # Tradernet MCP for Cursor
 
 **Trade-grade Tradernet API tools inside Cursor, over [Model Context Protocol](https://modelcontextprotocol.io/).**
