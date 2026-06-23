@@ -1,11 +1,52 @@
-# Tradernet MCP — Cursor plugin
+<div align="center">
 
-Connects Cursor to the Tradernet API over [Model Context Protocol](https://modelcontextprotocol.io/)
-via Streamable HTTP. Once installed, the agent gets ~61 tools: quotes, portfolio,
-orders, tariffs, reports and more.
+<img src="assets/logo.svg" alt="Tradernet MCP" width="280">
 
-> Every call runs against a **real Tradernet account** — real data, orders and
-> money. Use a dedicated test account, not your production one.
+# Tradernet MCP for Cursor
+
+**Trade-grade Tradernet API tools inside Cursor, over [Model Context Protocol](https://modelcontextprotocol.io/).**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](.cursor-plugin/plugin.json)
+[![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-2EC4B6.svg)](https://modelcontextprotocol.io/)
+[![Platform](https://img.shields.io/badge/platform-Cursor-000000.svg)](https://cursor.com/)
+[![GitHub stars](https://img.shields.io/github/stars/tradernet-api/tradernet-mcp?style=social)](https://github.com/tradernet-api/tradernet-mcp/stargazers)
+
+[Tradernet API docs](https://tradernet.com/tradernet-api/mcp) ·
+[Report issue](https://github.com/tradernet-api/tradernet-mcp/issues)
+
+</div>
+
+---
+
+> **Warning:** Every call runs against a **real Tradernet account** — real data, orders and money. Use a dedicated test account, not your production one.
+
+## Overview
+
+This Cursor plugin connects the agent to the Tradernet API via Streamable HTTP (`https://tradernet.com/mcp/tn`). Once installed, you get ~**61 tools**: quotes, portfolio, orders, tariffs, reports and more.
+
+Unlike a bare `mcp.json` snippet, the plugin bundles **rules**, a **SID-refresh skill**, **slash commands** and a **write/trade guard hook** so the agent handles auth, data quirks and risky operations safely.
+
+## Features
+
+| Capability | Description |
+|------------|-------------|
+| **MCP server** | Preconfigured `TN` endpoint with `${env:...}` header placeholders |
+| **Rules** | Secret hygiene, HMAC vs SID auth, data format and write/trade caution |
+| **Skill** | `tn-mcp-refresh-sid` — runbook for refreshing SID after `auth_by_login` |
+| **Commands** | `/tn-connect` (smoke check), `/tn-refresh-sid` |
+| **Guard hook** | `beforeMCPExecution` asks before orders, tariffs, lists, alerts and login |
+
+## Table of contents
+
+- [What's inside](#whats-inside)
+- [Requirements](#requirements)
+- [Secrets](#secrets-env-only-never-in-the-plugin)
+- [Installation](#installation)
+- [Quick start](#quick-start-after-install)
+- [Security](#security)
+- [Related integrations](#related-integrations)
+- [License](#license)
 
 ## What's inside
 
@@ -22,7 +63,7 @@ orders, tariffs, reports and more.
 1. A Tradernet account with API access.
 2. An API key pair — [tradernet.com/tradernet-api/auth-api](https://tradernet.com/tradernet-api/auth-api)
    (`apiSecret` is shown only once).
-3. Cursor with Streamable HTTP MCP support.
+3. [Cursor](https://cursor.com/) with Streamable HTTP MCP support.
 
 ## Secrets (env only, never in the plugin)
 
@@ -52,12 +93,13 @@ changing variables you need `source` + restart / Reload Window.
 ### Local (testing and internal teams)
 
 ```bash
-ln -s /absolute/path/to/tradernet-mcp ~/.cursor/plugins/local/tradernet-mcp
+git clone https://github.com/tradernet-api/tradernet-mcp.git
+ln -s "$(pwd)/tradernet-mcp" ~/.cursor/plugins/local/tradernet-mcp
 chmod +x ~/.cursor/plugins/local/tradernet-mcp/scripts/guard-write-tools.sh
 ```
 
-Then Reload Window (or restart Cursor). Check that the `TN` server appears under
-Settings → MCP, and the `tn-mcp-*` rules under Rules.
+Then **Reload Window** (or restart Cursor). Check that the `TN` server appears under
+**Settings → MCP**, and the `tn-mcp-*` rules under **Rules**.
 
 ### Marketplace
 
@@ -79,6 +121,14 @@ The repository must be open source for the public Marketplace.
   list/alert changes and `auth_by_login`.
 - Read-only tools (quotes, portfolio, reports) pass through without prompts.
 
+## Related integrations
+
+| Client | Repository | What you get |
+|--------|------------|--------------|
+| **Cursor** (this repo) | [tradernet-mcp](https://github.com/tradernet-api/tradernet-mcp) | Full plugin: rules, commands, hook, skill |
+| **Claude Desktop** | [tradernet-mcp-claude](https://github.com/tradernet-api/tradernet-mcp-claude) | `mcp-remote` config + optional SID skill |
+| **Codex** | [tradernet-mcp-codex](https://github.com/tradernet-api/tradernet-mcp-codex) | Codex plugin with MCP config and safety skill |
+
 ## License
 
-MIT.
+[MIT](LICENSE) © Tradernet
